@@ -2,27 +2,29 @@
 
 import sys
 
-# from PyQt5.QtGui import *
+from PyQt5.QtGui import QIntValidator
 from PyQt5.QtCore import Qt, QPoint, pyqtSignal, QTimer, QTime
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMdiArea, QWidget, QPushButton, QLabel, QSlider, \
-    QVBoxLayout, QHBoxLayout, QCheckBox
+    QVBoxLayout, QHBoxLayout, QCheckBox, QLineEdit
 
 
 class ArithmeticWidget(QWidget):
 
     def __init__(self, counter: int, parent=None):
         super(ArithmeticWidget, self).__init__(parent)
-        self.time = QTime(0, 0, 0)
-        self.timer = QTimer()
-
-        self.timer.start(1000)
-        self.timer.timeout.connect(self.change_time)
 
         main_box = QVBoxLayout()
 
+        # backend timer
+        self.time = QTime(0, 0, 0)
+        self.timer = QTimer()
+        self.timer.start(1000)
+        self.timer.timeout.connect(self.change_time)
+
+        # counter examples and timer
         self.counter_label = QLabel('0')
         self.counter_label.setAlignment(Qt.AlignLeft)
-        self.time_label = QLabel('0:0:00')
+        self.time_label = QLabel('0:00:00')
         self.time_label.setAlignment(Qt.AlignRight)
         h_box = QHBoxLayout()
         h_box.setContentsMargins(50, 20, 50, 0)
@@ -30,11 +32,46 @@ class ArithmeticWidget(QWidget):
         h_box.addWidget(self.time_label)
         main_box.addLayout(h_box)
 
+        # labels of nums and sign
+        self.num_1_label = QLabel('XX')
+        self.num_1_label.setAlignment(Qt.AlignRight)
+        self.num_2_label = QLabel('YY')
+        self.num_2_label.setAlignment(Qt.AlignLeft)
+        self.sign_label = QLabel('*')
+        self.sign_label.setFixedWidth(20)
+        self.sign_label.setAlignment(Qt.AlignHCenter)
+        h_box = QHBoxLayout()
+        h_box.setContentsMargins(80, 0, 80, 0)
+        h_box.addWidget(self.num_1_label)
+        h_box.addWidget(self.sign_label)
+        h_box.addWidget(self.num_2_label)
+        main_box.addLayout(h_box)
+
+        # answer field
+        self.answer_field = QLineEdit()
+        self.answer_field.setAlignment(Qt.AlignCenter)
+        self.answer_field.setValidator(QIntValidator())
+        h_box = QHBoxLayout()
+        h_box.setContentsMargins(80, 0, 80, 0)
+        h_box.addWidget(self.answer_field)
+        main_box.addLayout(h_box)
+
+        # confirm and skip buttons
+        self.confirm_btn = QPushButton('Enter answer')
+        self.skip_btn = QPushButton('Skip')
+        v_box = QVBoxLayout()
+        v_box.setContentsMargins(80, 0, 80, 0)
+        v_box.addWidget(self.confirm_btn)
+        v_box.addSpacing(30)
+        v_box.addWidget(self.skip_btn)
+        main_box.addLayout(v_box)
+
+
         self.setLayout(main_box)
 
     def change_time(self):
         self.time = self.time.addSecs(1)
-        text = self.time.toString('h:m:ss')
+        text = self.time.toString('h:mm:ss')
         self.time_label.setText(text)
 
 
