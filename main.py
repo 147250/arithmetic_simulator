@@ -3,7 +3,7 @@
 import sys
 
 # from PyQt5.QtGui import *
-from PyQt5.QtCore import Qt, QPoint, pyqtSignal
+from PyQt5.QtCore import Qt, QPoint, pyqtSignal, QTimer, QTime
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMdiArea, QWidget, QPushButton, QLabel, QSlider, \
     QVBoxLayout, QHBoxLayout, QCheckBox
 
@@ -12,22 +12,30 @@ class ArithmeticWidget(QWidget):
 
     def __init__(self, counter: int, parent=None):
         super(ArithmeticWidget, self).__init__(parent)
+        self.time = QTime(0, 0, 0)
+        self.timer = QTimer()
 
-        self.count = 0
+        self.timer.start(1000)
+        self.timer.timeout.connect(self.change_time)
 
         main_box = QVBoxLayout()
 
+        self.counter_label = QLabel('0')
+        self.counter_label.setAlignment(Qt.AlignLeft)
+        self.time_label = QLabel('0:0:00')
+        self.time_label.setAlignment(Qt.AlignRight)
         h_box = QHBoxLayout()
-        self.counter = QLabel(f'Examples 0/{counter}')
-        self.counter.setAlignment(Qt.AlignLeft)
-        h_box.addWidget(self.counter)
-
-        self.timer = QLabel('Timer')
-        self.timer.setAlignment(Qt.AlignRight)
-        h_box.addWidget(self.timer)
+        h_box.setContentsMargins(50, 20, 50, 0)
+        h_box.addWidget(self.counter_label)
+        h_box.addWidget(self.time_label)
         main_box.addLayout(h_box)
 
         self.setLayout(main_box)
+
+    def change_time(self):
+        self.time = self.time.addSecs(1)
+        text = self.time.toString('h:m:ss')
+        self.time_label.setText(text)
 
 
 class StartWidget(QWidget):
@@ -115,13 +123,13 @@ class MainWindow(QMainWindow):
         start_widget.start_signal.connect(self.switching_widget)
         self.start_window = self.mdi_area.addSubWindow(start_widget)
         self.start_window.setWindowFlags(Qt.FramelessWindowHint)
-        self.start_window.showMaximized()
+        # self.start_window.showMaximized() # TODO: recommit this
 
         arithmetic_widget = ArithmeticWidget(2)
         self.arithmetic_widget = self.mdi_area.addSubWindow(arithmetic_widget)
         self.arithmetic_widget.setWindowFlags(Qt.FramelessWindowHint)
-        self.arithmetic_widget.hide()
-
+        # self.arithmetic_widget.hide() # TODO: recommit this
+        self.arithmetic_widget.showMaximized()  # TODO: del this
         self.setCentralWidget(self.mdi_area)
 
     def switching_widget(self):
