@@ -25,7 +25,7 @@ class ArithmeticWidget(QWidget):
         operand_right = random.randint(*self.operand_range)
         operator = random.choice(self.operators)
         self.correct_answer = self.operator_dict[operator](operand_left, operand_right)
-        print(self.correct_answer)# TODO: del this
+        print(self.correct_answer)  # TODO: del this
         self.counter = 0
 
         main_box = QVBoxLayout()
@@ -107,7 +107,7 @@ class ArithmeticWidget(QWidget):
 
 
 class StartWidget(QWidget):
-    start_signal = pyqtSignal()
+    start_signal = pyqtSignal(tuple, tuple)
 
     def __init__(self, parent=None):
         super(StartWidget, self).__init__(parent)
@@ -201,17 +201,14 @@ class StartWidget(QWidget):
         self.floordiv_check.setChecked(True)
 
     def start_arithmetic(self):
-        self.start_signal.emit()
+        operand_range = self.difficulty[self.slider.value()]
+        operators = tuple(elem.text() for elem in self.operator_list if elem.isChecked())
+        self.start_signal.emit(operand_range, operators)
 
     def change_difficulty_label(self, value: int):
         num_1, num_2 = self.difficulty.get(value, (10, 100))
         text = f'numbers from {num_1} to {num_2}'
         self.difficulty_label.setText(text)
-
-    def get_range(self):
-        value = self.slider.value()
-        return self.difficulty[value]
-
 
 
 class MainWindow(QMainWindow):
@@ -239,7 +236,6 @@ class MainWindow(QMainWindow):
         self.start_window.hide()
 
         self.arithmetic_widget.showMaximized()
-
 
     def move_to_center(self):
         """Move window to center desktop"""
