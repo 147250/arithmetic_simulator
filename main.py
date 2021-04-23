@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import random
 import sys
 
 from PyQt5.QtCore import Qt, QPoint, pyqtSignal, QTimer, QTime
@@ -9,9 +10,23 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QMdiArea, QWidget, QPushB
 
 
 class ArithmeticWidget(QWidget):
+    operator_dict = {
+        '+': int.__add__,
+        '-': int.__sub__,
+        '*': int.__mul__,
+        '//': int.__floordiv__
+    }
 
-    def __init__(self, counter: int, parent=None):
+    def __init__(self, operand_range: tuple, operators: tuple, parent=None):
         super(ArithmeticWidget, self).__init__(parent)
+        self.operand_range = operand_range
+        self.operators = operators
+        operand_left = random.randint(*self.operand_range)
+        operand_right = random.randint(*self.operand_range)
+        operator = random.choice(self.operators)
+        self.correct_answer = self.operator_dict[operator](operand_left, operand_right)
+        print(self.correct_answer)# TODO: del this
+        self.counter = 0
 
         main_box = QVBoxLayout()
 
@@ -22,7 +37,7 @@ class ArithmeticWidget(QWidget):
         self.timer.timeout.connect(self.change_time)
 
         # counter examples and timer
-        self.counter_label = QLabel('0')
+        self.counter_label = QLabel(str(self.counter))
         self.counter_label.setAlignment(Qt.AlignLeft)
         self.time_label = QLabel('0:00:00')
         self.time_label.setAlignment(Qt.AlignRight)
@@ -33,11 +48,11 @@ class ArithmeticWidget(QWidget):
         main_box.addLayout(h_box)
 
         # labels of nums and sign
-        self.num_1_label = QLabel('XX')
+        self.num_1_label = QLabel(str(operand_left))
         self.num_1_label.setAlignment(Qt.AlignRight)
-        self.num_2_label = QLabel('YY')
+        self.num_2_label = QLabel(str(operand_right))
         self.num_2_label.setAlignment(Qt.AlignLeft)
-        self.sign_label = QLabel('*')
+        self.sign_label = QLabel(operator)
         self.sign_label.setFixedWidth(20)
         self.sign_label.setAlignment(Qt.AlignHCenter)
         h_box = QHBoxLayout()
@@ -58,6 +73,7 @@ class ArithmeticWidget(QWidget):
 
         # confirm and skip buttons
         self.confirm_btn = QPushButton('Enter answer')
+        self.confirm_btn.clicked.connect(self.next_round)
         self.skip_btn = QPushButton('Skip')
         v_box = QVBoxLayout()
         v_box.setContentsMargins(80, 0, 80, 0)
@@ -72,6 +88,21 @@ class ArithmeticWidget(QWidget):
         self.time = self.time.addSecs(1)
         text = self.time.toString('h:mm:ss')
         self.time_label.setText(text)
+
+    def next_round(self):
+        answer = self.answer_field.text()
+        if len(answer) and int(answer) == self.correct_answer:
+            operand_left = random.randint(*self.operand_range)
+            operand_right = random.randint(*self.operand_range)
+            operator = random.choice(self.operators)
+            self.correct_answer = self.operator_dict[operator](operand_left, operand_right)
+            self.num_1_label.setText(str(operand_left))
+            self.num_2_label.setText(str(operand_right))
+            self.sign_label.setText(operator)
+            self.counter += 1
+            self.counter_label.setText(str(self.counter))
+            self.answer_field.clear()
+            print(self.correct_answer)  # TODO: del this
 
 
 class StartWidget(QWidget):
@@ -191,7 +222,7 @@ class MainWindow(QMainWindow):
         self.start_window.setWindowFlags(Qt.FramelessWindowHint)
         # self.start_window.showMaximized()  # TODO: recommit this
 
-        arithmetic_widget = ArithmeticWidget(2)
+        arithmetic_widget = ArithmeticWidget((10, 100), ('-', '+'))
         self.arithmetic_widget = self.mdi_area.addSubWindow(arithmetic_widget)
         self.arithmetic_widget.setWindowFlags(Qt.FramelessWindowHint)
         # self.arithmetic_widget.hide()  # TODO: recommit this
