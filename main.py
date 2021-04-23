@@ -83,6 +83,7 @@ class ArithmeticWidget(QWidget):
         main_box.addLayout(v_box)
 
         self.setLayout(main_box)
+        self.setAttribute(Qt.WA_DeleteOnClose)
 
     def change_time(self):
         self.time = self.time.addSecs(1)
@@ -207,6 +208,11 @@ class StartWidget(QWidget):
         text = f'numbers from {num_1} to {num_2}'
         self.difficulty_label.setText(text)
 
+    def get_range(self):
+        value = self.slider.value()
+        return self.difficulty[value]
+
+
 
 class MainWindow(QMainWindow):
 
@@ -220,18 +226,20 @@ class MainWindow(QMainWindow):
         start_widget.start_signal.connect(self.switching_widget)
         self.start_window = self.mdi_area.addSubWindow(start_widget)
         self.start_window.setWindowFlags(Qt.FramelessWindowHint)
-        # self.start_window.showMaximized()  # TODO: recommit this
+        self.start_window.showMaximized()  # TODO: recommit this
 
         arithmetic_widget = ArithmeticWidget((10, 100), ('-', '+'))
         self.arithmetic_widget = self.mdi_area.addSubWindow(arithmetic_widget)
         self.arithmetic_widget.setWindowFlags(Qt.FramelessWindowHint)
-        # self.arithmetic_widget.hide()  # TODO: recommit this
-        self.arithmetic_widget.showMaximized()  # TODO: del this
+        self.arithmetic_widget.hide()  # TODO: recommit this
+        # self.arithmetic_widget.showMaximized()  # TODO: del this
         self.setCentralWidget(self.mdi_area)
 
     def switching_widget(self):
         self.start_window.hide()
+
         self.arithmetic_widget.showMaximized()
+
 
     def move_to_center(self):
         """Move window to center desktop"""
