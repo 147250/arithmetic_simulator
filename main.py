@@ -2,8 +2,8 @@
 
 import sys
 
-from PyQt5.QtGui import QIntValidator
 from PyQt5.QtCore import Qt, QPoint, pyqtSignal, QTimer, QTime
+from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMdiArea, QWidget, QPushButton, QLabel, QSlider, \
     QVBoxLayout, QHBoxLayout, QCheckBox, QLineEdit
 
@@ -66,7 +66,6 @@ class ArithmeticWidget(QWidget):
         v_box.addWidget(self.skip_btn)
         main_box.addLayout(v_box)
 
-
         self.setLayout(main_box)
 
     def change_time(self):
@@ -111,14 +110,24 @@ class StartWidget(QWidget):
         label.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
         main_box.addWidget(label)
 
+        self.operator_list = []
+
         self.add_check = QCheckBox('+')
         self.add_check.setCheckState(Qt.Checked)
+        self.add_check.toggled.connect(self.add_status_check)
+        self.operator_list.append(self.add_check)
         self.sub_check = QCheckBox('-')
         self.sub_check.setCheckState(Qt.Checked)
+        self.sub_check.toggled.connect(self.sub_status_check)
+        self.operator_list.append(self.sub_check)
         self.mul_check = QCheckBox('*')
         self.mul_check.setCheckState(Qt.Checked)
+        self.mul_check.toggled.connect(self.mul_status_check)
+        self.operator_list.append(self.mul_check)
         self.floordiv_check = QCheckBox('//')
         self.floordiv_check.setCheckState(Qt.Checked)
+        self.floordiv_check.toggled.connect(self.floordiv_status_check)
+        self.operator_list.append(self.floordiv_check)
         h_box = QHBoxLayout()
         h_box.setAlignment(Qt.AlignHCenter)
         h_box.addWidget(self.add_check)
@@ -138,6 +147,26 @@ class StartWidget(QWidget):
         main_box.addSpacing(50)
 
         self.setLayout(main_box)
+
+    def add_status_check(self):
+        if any(map(QCheckBox.isChecked, self.operator_list)):
+            return
+        self.add_check.setChecked(True)
+
+    def sub_status_check(self):
+        if any(map(QCheckBox.isChecked, self.operator_list)):
+            return
+        self.sub_check.setChecked(True)
+
+    def mul_status_check(self):
+        if any(map(QCheckBox.isChecked, self.operator_list)):
+            return
+        self.mul_check.setChecked(True)
+
+    def floordiv_status_check(self):
+        if any(map(QCheckBox.isChecked, self.operator_list)):
+            return
+        self.floordiv_check.setChecked(True)
 
     def start_arithmetic(self):
         self.start_signal.emit()
@@ -160,12 +189,12 @@ class MainWindow(QMainWindow):
         start_widget.start_signal.connect(self.switching_widget)
         self.start_window = self.mdi_area.addSubWindow(start_widget)
         self.start_window.setWindowFlags(Qt.FramelessWindowHint)
-        # self.start_window.showMaximized() # TODO: recommit this
+        # self.start_window.showMaximized()  # TODO: recommit this
 
         arithmetic_widget = ArithmeticWidget(2)
         self.arithmetic_widget = self.mdi_area.addSubWindow(arithmetic_widget)
         self.arithmetic_widget.setWindowFlags(Qt.FramelessWindowHint)
-        # self.arithmetic_widget.hide() # TODO: recommit this
+        # self.arithmetic_widget.hide()  # TODO: recommit this
         self.arithmetic_widget.showMaximized()  # TODO: del this
         self.setCentralWidget(self.mdi_area)
 
