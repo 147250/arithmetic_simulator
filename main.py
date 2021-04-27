@@ -223,9 +223,9 @@ class ArithmeticWidget(QWidget):
         result_window = QMessageBox(self)
         time = self.time.second()
         counter = self.counter
-        average_time = None
+        average_time = '--undefined--'
         if counter and time:
-            average_time = time / counter
+            average_time = f'{time / counter:.2}'
 
         result_window.setText(f'time: {self.time.toString()}\n\n'
                               f'total examples: {counter}\n\n'
