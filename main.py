@@ -6,7 +6,7 @@ import sys
 from PyQt5.QtCore import Qt, QPoint, pyqtSignal, QTimer, QTime, QRect
 from PyQt5.QtGui import QIntValidator, QMouseEvent, QPainter, QPaintEvent, QColor, QPen
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMdiArea, QWidget, QPushButton, QLabel, QSlider, \
-    QVBoxLayout, QHBoxLayout, QCheckBox, QLineEdit
+    QVBoxLayout, QHBoxLayout, QCheckBox, QLineEdit, QMessageBox
 
 
 class MyButton(QPushButton):
@@ -29,7 +29,7 @@ class MyButton(QPushButton):
 
         self.setFixedSize(self.width, self.height)
 
-        self.setStyleSheet(f'{bg_color}'
+        self.setStyleSheet(f'background-color: {bg_color};'
                            f' border-radius: {self.width // 2}px;'
                            f' font-size: {self.width // 4}px;'
                            f' color: {self.text_color};')
@@ -118,6 +118,8 @@ class ArithmeticWidget(QWidget):
         '//': int.__floordiv__
     }
 
+    stop_signal = pyqtSignal()
+
     def __init__(self, operand_range: tuple, operators: tuple, parent=None):
         super(ArithmeticWidget, self).__init__(parent)
         self.operand_range = operand_range
@@ -173,20 +175,18 @@ class ArithmeticWidget(QWidget):
         h_box.addWidget(self.answer_field)
         main_box.addLayout(h_box)
 
-        # confirm and skip buttons
-        bg_color = 'background-color: rgb(138, 226, 52);'
-        self.confirm_btn = MyButton(btn_text='Enter', bg_color=bg_color, text_color='black', delay=False)
+        # buttons
+        self.confirm_btn = MyButton(btn_text='Enter', bg_color='rgb(138, 226, 52)', text_color='black', delay=False)
         self.confirm_btn.clicked.connect(self.next_round)
         h_box = QHBoxLayout()
         h_box.addWidget(self.confirm_btn)
         main_box.addLayout(h_box)
 
-        bg_color = 'background-color: rgb(252, 233, 79);'
-        self.skip_btn = MyButton(btn_text='Skip', bg_color=bg_color, text_color='black', delay=False)
+        self.skip_btn = MyButton(btn_text='Skip', bg_color='rgb(252, 233, 79)', text_color='black', delay=False)
         self.skip_btn.clicked.connect(self.skip_round)
 
-        bg_color = 'background-color: red;'
-        self.stop_btn = MyButton(btn_text='Stop', bg_color=bg_color,  text_color='white')
+        self.stop_btn = MyButton(btn_text='Stop', bg_color='red', text_color='white')
+        self.stop_btn.clicked.connect(self.stop_session)
         h_box = QHBoxLayout()
         h_box.addWidget(self.skip_btn)
         h_box.addWidget(self.stop_btn)
@@ -225,6 +225,24 @@ class ArithmeticWidget(QWidget):
         self.sign_label.setText(operator)
         self.answer_field.clear()
         print(self.correct_answer)  # TODO: del this
+
+    def stop_session(self):
+        """Show results of session and emmit stop signal"""
+        self.timer.stop()
+        result_window = QMessageBox(self)
+        time = self.time.second()
+        counter = self.counter
+        average_time = None
+        if counter and time:
+            average_time = time / counter
+
+        result_window.setText(f'time: {self.time.toString()}\n\n'
+                              f'total examples: {counter}\n\n'
+                              f'Average time for arithmetic operation {average_time} second(s)'
+                              )
+        result_window.exec()
+        self.stop_signal.emit()
+        self.close()
 
 
 class StartWidget(QWidget):
@@ -352,6 +370,7 @@ class MainWindow(QMainWindow):
 
     def create_arithmetic_widget(self, operand_range: tuple, operators: tuple):
         arithmetic_widget = ArithmeticWidget(operand_range, operators)
+        arithmetic_widget.stop_signal.connect(self.delete_arithmetic_widget)
         self.arithmetic_widget = self.mdi_area.addSubWindow(arithmetic_widget)
         self.arithmetic_widget.setWindowFlags(Qt.FramelessWindowHint)
         self.start_window.hide()
@@ -362,6 +381,9 @@ class MainWindow(QMainWindow):
         point = QPoint(self.width() // 2, self.height() // 2 + 100)
         pos = QApplication.desktop().availableGeometry().center()
         self.move(pos - point)
+
+    def delete_arithmetic_widget(self):
+        print('something')
 
 
 class ArithmeticApplication(QApplication):
