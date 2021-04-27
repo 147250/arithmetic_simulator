@@ -124,11 +124,7 @@ class ArithmeticWidget(QWidget):
         super(ArithmeticWidget, self).__init__(parent)
         self.operand_range = operand_range
         self.operators = operators
-        operand_left = random.randint(*self.operand_range)
-        operand_right = random.randint(*self.operand_range)
-        operator = random.choice(self.operators)
-        self.correct_answer = self.operator_dict[operator](operand_left, operand_right)
-        print(self.correct_answer)  # TODO: del this
+        self.correct_answer = None
         self.counter = 0
 
         main_box = QVBoxLayout()
@@ -151,11 +147,11 @@ class ArithmeticWidget(QWidget):
         main_box.addLayout(h_box)
 
         # labels of nums and sign
-        self.num_1_label = QLabel(str(operand_left))
+        self.num_1_label = QLabel()
         self.num_1_label.setAlignment(Qt.AlignRight)
-        self.num_2_label = QLabel(str(operand_right))
+        self.num_2_label = QLabel()
         self.num_2_label.setAlignment(Qt.AlignLeft)
-        self.sign_label = QLabel(operator)
+        self.sign_label = QLabel()
         self.sign_label.setFixedWidth(20)
         self.sign_label.setAlignment(Qt.AlignHCenter)
         h_box = QHBoxLayout()
@@ -167,7 +163,7 @@ class ArithmeticWidget(QWidget):
 
         # answer field
         self.answer_field = QLineEdit()
-        self.answer_field.returnPressed.connect(self.next_round)
+        self.answer_field.returnPressed.connect(self.check_answer)
         self.answer_field.setAlignment(Qt.AlignCenter)
         self.answer_field.setValidator(QIntValidator())
         h_box = QHBoxLayout()
@@ -177,13 +173,13 @@ class ArithmeticWidget(QWidget):
 
         # buttons
         self.confirm_btn = MyButton(btn_text='Enter', bg_color='rgb(138, 226, 52)', text_color='black', delay=False)
-        self.confirm_btn.clicked.connect(self.next_round)
+        self.confirm_btn.clicked.connect(self.check_answer)
         h_box = QHBoxLayout()
         h_box.addWidget(self.confirm_btn)
         main_box.addLayout(h_box)
 
         self.skip_btn = MyButton(btn_text='Skip', bg_color='rgb(252, 233, 79)', text_color='black', delay=False)
-        self.skip_btn.clicked.connect(self.skip_round)
+        self.skip_btn.clicked.connect(self.show_next_example)
 
         self.stop_btn = MyButton(btn_text='Stop', bg_color='red', text_color='white')
         self.stop_btn.clicked.connect(self.stop_session)
@@ -194,37 +190,32 @@ class ArithmeticWidget(QWidget):
 
         self.setLayout(main_box)
         self.setAttribute(Qt.WA_DeleteOnClose)
+        self.show_next_example()
 
     def change_time(self):
         self.time = self.time.addSecs(1)
         text = self.time.toString('h:mm:ss')
         self.time_label.setText(text)
 
-    def next_round(self):
-        answer = self.answer_field.text()
-        if len(answer) and int(answer) == self.correct_answer:
-            operand_left = random.randint(*self.operand_range)
-            operand_right = random.randint(*self.operand_range)
-            operator = random.choice(self.operators)
-            self.correct_answer = self.operator_dict[operator](operand_left, operand_right)
-            self.num_1_label.setText(str(operand_left))
-            self.num_2_label.setText(str(operand_right))
-            self.sign_label.setText(operator)
-            self.counter += 1
-            self.counter_label.setText(str(self.counter))
-            self.answer_field.clear()
-            print(self.correct_answer)  # TODO: del this
-
-    def skip_round(self):
+    def show_next_example(self):
         operand_left = random.randint(*self.operand_range)
         operand_right = random.randint(*self.operand_range)
         operator = random.choice(self.operators)
+        if operator == '//':
+            operand_left *= operand_right
         self.correct_answer = self.operator_dict[operator](operand_left, operand_right)
         self.num_1_label.setText(str(operand_left))
         self.num_2_label.setText(str(operand_right))
         self.sign_label.setText(operator)
         self.answer_field.clear()
         print(self.correct_answer)  # TODO: del this
+
+    def check_answer(self):
+        answer = self.answer_field.text()
+        if len(answer) and int(answer) == self.correct_answer:
+            self.show_next_example()
+            self.counter += 1
+            self.counter_label.setText(str(self.counter))
 
     def stop_session(self):
         """Show results of session and emmit stop signal"""
