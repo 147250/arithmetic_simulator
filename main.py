@@ -242,7 +242,6 @@ class ArithmeticWidget(QWidget):
                               )
         result_window.exec()
         self.stop_signal.emit()
-        self.close()
 
 
 class StartWidget(QWidget):
@@ -370,7 +369,7 @@ class MainWindow(QMainWindow):
 
     def create_arithmetic_widget(self, operand_range: tuple, operators: tuple):
         arithmetic_widget = ArithmeticWidget(operand_range, operators)
-        arithmetic_widget.stop_signal.connect(self.delete_arithmetic_widget)
+        arithmetic_widget.stop_signal.connect(self.reshow_start_widget)
         self.arithmetic_widget = self.mdi_area.addSubWindow(arithmetic_widget)
         self.arithmetic_widget.setWindowFlags(Qt.FramelessWindowHint)
         self.start_window.hide()
@@ -382,8 +381,9 @@ class MainWindow(QMainWindow):
         pos = QApplication.desktop().availableGeometry().center()
         self.move(pos - point)
 
-    def delete_arithmetic_widget(self):
-        print('something')
+    def reshow_start_widget(self):
+        self.mdi_area.activeSubWindow().close()
+        self.start_window.showMaximized()
 
 
 class ArithmeticApplication(QApplication):
