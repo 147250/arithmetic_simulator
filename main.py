@@ -3,10 +3,111 @@
 import random
 import sys
 
-from PyQt5.QtCore import Qt, QPoint, pyqtSignal, QTimer, QTime
-from PyQt5.QtGui import QIntValidator
+from PyQt5.QtCore import Qt, QPoint, pyqtSignal, QTimer, QTime, QRect
+from PyQt5.QtGui import QIntValidator, QMouseEvent, QPainter, QPaintEvent, QColor, QPen
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMdiArea, QWidget, QPushButton, QLabel, QSlider, \
     QVBoxLayout, QHBoxLayout, QCheckBox, QLineEdit
+
+
+class MyButton(QPushButton):
+
+    def __init__(self, btn_text: str, bg_color: str = 'green', progress_color: str = 'yellow',
+                 text_color: str = 'white', delay: bool = True, parent=None):
+        super(MyButton, self).__init__(btn_text, parent)
+        # custom properties
+        self._delay = delay
+        self.width = 75
+        self.height = 75
+        self.progress_width = 10
+        self.value = 0
+        self.MAX_VALUE = 100
+        self.progress_color = progress_color
+        self.text_color = text_color
+        self.progress_rounded_cap = True
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.change_value)
+
+        self.setFixedSize(self.width, self.height)
+
+        self.setStyleSheet(f'{bg_color}'
+                           f' border-radius: {self.width // 2}px;'
+                           f' font-size: {self.width // 4}px;'
+                           f' color: {self.text_color};')
+
+    def set_delay(self, value: bool):
+        self._delay = value
+
+    def paintEvent(self, event: QPaintEvent):
+        QPushButton.paintEvent(self, event)
+        if not self._delay:
+            return
+        # set progress parameter
+        width = self.width - self.progress_width
+        height = self.height - self.progress_width
+        margin = self.progress_width // 2
+        value = self.value * 360 // self.MAX_VALUE
+
+        # painter
+        paint = QPainter()
+        paint.begin(self)
+        paint.setRenderHint(QPainter.HighQualityAntialiasing)
+
+        # draw rectangle
+        rect = QRect(0, 0, self.width, self.height)
+        paint.setPen(Qt.NoPen)
+        paint.drawRect(rect)
+
+        # pen
+        pen = QPen()
+        color = QColor(self.progress_color)
+        pen.setColor(color)
+        pen.setWidth(11)
+
+        # set round cap
+        if self.progress_rounded_cap:
+            pen.setCapStyle(Qt.RoundCap)
+
+        # create arc / circular progress
+        paint.setPen(pen)
+        paint.drawArc(margin, margin, width, height, -90 * 16, -value * 16)
+
+        paint.end()
+
+    def _reset_activation(self):
+        self.timer.stop()
+        self.value = 0
+        self.update()
+
+    def _point_in_circle(self, x, y) -> bool:
+        radius = self.width // 2
+        x -= radius
+        y -= radius
+        if (x ** 2 + y ** 2) ** 0.5 <= radius:
+            return True
+        return False
+
+    def change_value(self):
+        if self.value >= self.MAX_VALUE:
+            self._reset_activation()
+            self.clicked.emit()
+            return
+        self.value += 4
+        self.update()
+
+    def mousePressEvent(self, evnt: QMouseEvent):
+        if self._delay and evnt.button() == Qt.LeftButton and self._point_in_circle(evnt.x(), evnt.y()):
+            self.timer.start(20)
+
+    def mouseReleaseEvent(self, evnt: QMouseEvent):
+        if not self._delay and evnt.button() == Qt.LeftButton and self._point_in_circle(evnt.x(), evnt.y()):
+            self.clicked.emit()
+            return
+        if self.timer.isActive():
+            self._reset_activation()
+
+    def mouseMoveEvent(self, evnt: QMouseEvent):
+        if not self._point_in_circle(evnt.x(), evnt.y()):
+            self._reset_activation()
 
 
 class ArithmeticWidget(QWidget):
@@ -64,6 +165,7 @@ class ArithmeticWidget(QWidget):
 
         # answer field
         self.answer_field = QLineEdit()
+        self.answer_field.returnPressed.connect(self.next_round)
         self.answer_field.setAlignment(Qt.AlignCenter)
         self.answer_field.setValidator(QIntValidator())
         h_box = QHBoxLayout()
@@ -72,16 +174,23 @@ class ArithmeticWidget(QWidget):
         main_box.addLayout(h_box)
 
         # confirm and skip buttons
-        self.confirm_btn = QPushButton('Enter answer')
+        bg_color = 'background-color: rgb(138, 226, 52);'
+        self.confirm_btn = MyButton(btn_text='Enter', bg_color=bg_color, text_color='black', delay=False)
         self.confirm_btn.clicked.connect(self.next_round)
-        self.skip_btn = QPushButton('Skip')
+        h_box = QHBoxLayout()
+        h_box.addWidget(self.confirm_btn)
+        main_box.addLayout(h_box)
+
+        bg_color = 'background-color: rgb(252, 233, 79);'
+        self.skip_btn = MyButton(btn_text='Skip', bg_color=bg_color, text_color='black', delay=False)
         self.skip_btn.clicked.connect(self.skip_round)
-        v_box = QVBoxLayout()
-        v_box.setContentsMargins(80, 0, 80, 0)
-        v_box.addWidget(self.confirm_btn)
-        v_box.addSpacing(30)
-        v_box.addWidget(self.skip_btn)
-        main_box.addLayout(v_box)
+
+        bg_color = 'background-color: red;'
+        self.stop_btn = MyButton(btn_text='Stop', bg_color=bg_color,  text_color='white')
+        h_box = QHBoxLayout()
+        h_box.addWidget(self.skip_btn)
+        h_box.addWidget(self.stop_btn)
+        main_box.addLayout(h_box)
 
         self.setLayout(main_box)
         self.setAttribute(Qt.WA_DeleteOnClose)
