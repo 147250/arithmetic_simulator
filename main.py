@@ -111,8 +111,6 @@ class MyButton(QPushButton):
 
 
 class ArithmeticWidget(QWidget):
-
-
     stop_signal = pyqtSignal()
 
     def __init__(self, operand_range: tuple, operators: tuple, parent=None):
@@ -213,7 +211,6 @@ class ArithmeticWidget(QWidget):
         self.sign_label.setText(operator)
         self.answer_field.clear()
         self.answer_field.setFocus(True)
-        print(self.correct_answer)  # TODO: del this
 
     def check_answer(self):
         answer = self.answer_field.text()
@@ -232,12 +229,11 @@ class ArithmeticWidget(QWidget):
         counter = self.counter
         average_time = '--undefined--'
         if counter and time:
-            average_time = f'{time / counter:.2}'
+            average_time = f'{round(time / counter, 1)}'
 
         result_window.setText(f'time: {self.time.toString()}\n\n'
                               f'total examples: {counter}\n\n'
-                              f'Average time for arithmetic operation {average_time} second(s)'
-                              )
+                              f'Average time for arithmetic operation {average_time} second(s)')
         result_window.exec()
         self.stop_signal.emit()
 
