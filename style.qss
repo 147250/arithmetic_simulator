@@ -4,6 +4,7 @@ QMdiSubWindow {
 
 QLabel {
     font-size: 25px;
+    color: white;
 }
 
 QMessageBox {

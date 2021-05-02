@@ -111,19 +111,24 @@ class MyButton(QPushButton):
 
 
 class ArithmeticWidget(QWidget):
-    operator_dict = {
-        '+': int.__add__,
-        '-': int.__sub__,
-        '*': int.__mul__,
-        '//': int.__floordiv__
-    }
+
 
     stop_signal = pyqtSignal()
 
     def __init__(self, operand_range: tuple, operators: tuple, parent=None):
         super(ArithmeticWidget, self).__init__(parent)
+
+        self.operator_dict = {
+            '+': self.add,
+            '-': self.sub,
+            '*': self.mul,
+            '//': self.floordiv
+        }
+
         self.operand_range = operand_range
         self.operators = operators
+        self.operand_left = None
+        self.operand_right = None
         self.correct_answer = None
         self.counter = 0
 
@@ -201,11 +206,10 @@ class ArithmeticWidget(QWidget):
         operand_left = random.randint(*self.operand_range)
         operand_right = random.randint(*self.operand_range)
         operator = random.choice(self.operators)
-        if operator == '//':
-            operand_left *= operand_right
-        self.correct_answer = self.operator_dict[operator](operand_left, operand_right)
-        self.num_1_label.setText(str(operand_left))
-        self.num_2_label.setText(str(operand_right))
+        func = self.operator_dict[operator]
+        func(operand_left, operand_right)
+        self.num_1_label.setText(str(self.operand_left))
+        self.num_2_label.setText(str(self.operand_right))
         self.sign_label.setText(operator)
         self.answer_field.clear()
         print(self.correct_answer)  # TODO: del this
@@ -233,6 +237,26 @@ class ArithmeticWidget(QWidget):
                               )
         result_window.exec()
         self.stop_signal.emit()
+
+    def add(self, a: int, b: int):
+        self.operand_left = a
+        self.operand_right = b
+        self.correct_answer = self.operand_left + self.operand_right
+
+    def mul(self, a: int, b: int):
+        self.operand_left = a
+        self.operand_right = b
+        self.correct_answer = self.operand_left * self.operand_right
+
+    def sub(self, a: int, b: int):
+        self.operand_left = a + b
+        self.operand_right = b
+        self.correct_answer = self.operand_left - self.operand_right
+
+    def floordiv(self, a: int, b: int):
+        self.operand_left = a * b
+        self.operand_right = b
+        self.correct_answer = self.operand_left // self.operand_right
 
 
 class StartWidget(QWidget):
