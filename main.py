@@ -212,6 +212,7 @@ class ArithmeticWidget(QWidget):
         self.num_2_label.setText(str(self.operand_right))
         self.sign_label.setText(operator)
         self.answer_field.clear()
+        self.answer_field.setFocus(True)
         print(self.correct_answer)  # TODO: del this
 
     def check_answer(self):
@@ -220,6 +221,8 @@ class ArithmeticWidget(QWidget):
             self.show_next_example()
             self.counter += 1
             self.counter_label.setText(str(self.counter))
+            return
+        self.answer_field.setFocus(True)
 
     def stop_session(self):
         """Show results of session and emmit stop signal"""
