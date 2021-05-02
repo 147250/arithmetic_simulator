@@ -1,0 +1,15 @@
+QMdiSubWindow {
+    background-color: qlineargradient(spread:reflect, x1:0.499531, y1:0.995, x2:0.489, y2:0, stop:0 rgba(235, 57, 255, 255), stop:1 rgba(144, 0, 255, 255));
+}
+
+QLabel {
+    font-size: 25px;
+}
+
+QMessageBox {
+    background-color: qlineargradient(spread:reflect, x1:0, y1:1, x2:1, y2:0.0284091, stop:0 rgba(255, 57, 242, 235), stop:1 rgba(209, 82, 255, 225));
+}
+
+QMessageBox  QLabel {
+    font-size: 15px;
+}

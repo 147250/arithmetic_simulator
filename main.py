@@ -382,9 +382,9 @@ class ArithmeticApplication(QApplication):
 
     def __init__(self, argv):
         super(ArithmeticApplication, self).__init__(argv)
-        # with open('style.qss', 'r') as file:
-        #     style = file.read()
-        #     self.setStyleSheet(style)
+        with open('style.qss', 'r') as file:
+            style = file.read()
+            self.setStyleSheet(style)
 
         # create main window
         self.main_window = MainWindow()
