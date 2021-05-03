@@ -214,12 +214,14 @@ class ArithmeticWidget(QWidget):
 
     def check_answer(self):
         answer = self.answer_field.text()
+        cur_pos = self.answer_field.cursorPosition()
         if len(answer) and int(answer) == self.correct_answer:
             self.show_next_example()
             self.counter += 1
             self.counter_label.setText(str(self.counter))
             return
         self.answer_field.setFocus(True)
+        self.answer_field.setCursorPosition(cur_pos)
 
     def stop_session(self):
         """Show results of session and emmit stop signal"""
