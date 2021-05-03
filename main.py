@@ -411,7 +411,7 @@ class ArithmeticApplication(QApplication):
         cur_dir = Path(__file__).absolute().parent
         path = Path(cur_dir, 'style.qss')
         if path.is_file():
-            with open('style.qss', 'r') as file:
+            with open(path, 'r') as file:
                 style = file.read()
                 self.setStyleSheet(style)
 
