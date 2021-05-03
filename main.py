@@ -225,7 +225,7 @@ class ArithmeticWidget(QWidget):
         """Show results of session and emmit stop signal"""
         self.timer.stop()
         result_window = QMessageBox(self)
-        time = self.time.second()
+        time = QTime(0, 0).secsTo(self.time)
         counter = self.counter
         average_time = '--undefined--'
         if counter and time:
