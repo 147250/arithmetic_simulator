@@ -2,6 +2,7 @@
 
 import random
 import sys
+from pathlib import Path
 
 from PyQt5.QtCore import Qt, QPoint, pyqtSignal, QTimer, QTime, QRect
 from PyQt5.QtGui import QIntValidator, QMouseEvent, QPainter, QPaintEvent, QColor, QPen
@@ -407,9 +408,12 @@ class ArithmeticApplication(QApplication):
 
     def __init__(self, argv):
         super(ArithmeticApplication, self).__init__(argv)
-        with open('style.qss', 'r') as file:
-            style = file.read()
-            self.setStyleSheet(style)
+        cur_dir = Path(__file__).absolute().parent
+        path = Path(cur_dir, 'style.qss')
+        if path.is_file():
+            with open('style.qss', 'r') as file:
+                style = file.read()
+                self.setStyleSheet(style)
 
         # create main window
         self.main_window = MainWindow()
